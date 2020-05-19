@@ -97,7 +97,7 @@
 `
 **NOTE:** Bulk file must end with newline char (\n or \r\n)
 
-## Analze API
+## Analyze API
 `POST /_analyze 
 {
   "text": "some_string",
@@ -106,18 +106,31 @@
   "tokenizer": "standard"
   "filter": ["lowercase"
 }`
+
 ## Mappings
+`GET /index_name/_mapping`
+
 `PUT /index_name 
 {
+	"settings": {
+		"index.mapping.coerce": false"
+  },
   "mappings": {
 		"properties": {
 			"field_name": { "type": "integer|float|text|date|boolean|keyword},
 			"field_name": {
-				"properties": {																	#object data type
-					"field_name": { "type": "some_type" }
+				"properties": {																	#for object data type
+					"field_name": { "type": "date" }
+					"format": "dd/MM/yyyy|epoch_second",
+					"doc_values": false,													#save space when not aggregating, scripting or sorting large indices
+					"norms": false, 															#save space when not using for relevance scoring (e.g. filtering/aggregations)
+					"indexing": false,														#save space non-filtering e.g. time series
+					"null_value": "NULL",													#set null val for searching																			
+					"copy_to": concatenation_field_name
 				} 
 			},
-			"field_name": { "type": "nested"}									#object data type
+			"field_name": { "type": "nested"},								#also for object data type
+			"field_name.subfield" { "type": "some_type" }     #dot notation
 		}
   }
 }
