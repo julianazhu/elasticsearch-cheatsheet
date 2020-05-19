@@ -86,7 +86,40 @@
 }`
 
 ## Bulk API
-`POST /_bulk
-{ "index: {"_index": "index_name", "_id": #} }
+`POST /index_name//_bulk
+{ "index: {"_id": # } }
 { "field_name: value, "field2_name": value2 }
+{ "create": {"_id":# } }
+{ "field_name: value, "field2_name": value2 }
+{ "update": {"_id":# } }
+{ "doc": {field_name: value, "field2_name": value2 } }
+{ "delete": {"_id":# } }
+`
+**NOTE:** Bulk file must end with newline char (\n or \r\n)
+
+## Analze API
+`POST /_analyze 
+{
+  "text": "some_string",
+  "analyzer": "standard",
+  "char_filter": [],
+  "tokenizer": "standard"
+  "filter": ["lowercase"
+}`
+## Mappings
+`PUT /index_name 
+{
+  "mappings": {
+		"properties": {
+			"field_name": { "type": "integer|float|text|date|boolean|keyword},
+			"field_name": {
+				"properties": {																	#object data type
+					"field_name": { "type": "some_type" }
+				} 
+			},
+			"field_name": { "type": "nested"}									#object data type
+		}
+  }
+}
+
 `
