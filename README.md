@@ -101,10 +101,13 @@
 `POST /_analyze 
 {
   "text": "some_string",
-  "analyzer": "standard",
-  "char_filter": [],
+  "analyzer": "(standard|stemming_analyzer|pattern_analyzer|english)",
+  "char_filter": [html_strip],
   "tokenizer": "standard"
-  "filter": ["lowercase"
+  "filter": [
+		"lowercase".
+		"stop",
+		"asciifolding"																			#Translates weird chars
 }`
 
 ## Mappings
@@ -126,7 +129,8 @@
 					"norms": false, 															#save space when not using for relevance scoring (e.g. filtering/aggregations)
 					"indexing": false,														#save space non-filtering e.g. time series
 					"null_value": "NULL",													#set null val for searching																			
-					"copy_to": concatenation_field_name
+					"copy_to": concatenation_field_name,
+					"ignore_above": #															#ignores > length
 				} 
 			},
 			"field_name": { "type": "nested"},								#also for object data type
@@ -135,4 +139,62 @@
   }
 }
 
-`
+###### Index Templates
+Will apply to all new Indexes created matching the pattern
+`PUT /_template/index_name
+{
+	"index_patterns": ["indexes_to_match*"],
+	"mappings": {
+		"properties": {
+			"field_name": {
+				"type": type
+			}
+		}
+	}
+}`
+
+###### Dynamic Templates
+Will apply to multiple fields/types
+`PUT /_template/index_name
+{
+	"mappings": {
+		"dynamic_templates": {
+			"field_name": {
+				"match_mapping_type": (type|*),
+				"match": "regex",
+				"match_pattern": "regex",
+				"mapping": {
+					"type": (desired_type|[dynamic_type])          #dynamic_type will leave type as is
+				}
+			}
+		}
+	}
+}`
+
+
+## Re-Indexing
+`POST /_reindex
+{
+	"source":{
+		"index": "old_index_name",
+		"query": {
+			"range": {
+			}
+		}
+	},
+	"dest": {
+		"index": "new_index_name"
+  }
+}`
+
+## Field Aliasing
+`PUT /index_name/_mapping
+{
+	"properties": {
+		"field_name": {
+			"type": "alias",
+			"path": "alias_name"
+		}
+	}
+}`
+
