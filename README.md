@@ -55,7 +55,7 @@
   }
 }`
 
-`POST /index_name/_update_by_query
+`POST /index_name/_update_by_query												#will reindex all matches
 {
 	"script": {
 		"source": "ctx._source.in_stock(op)"
@@ -198,3 +198,178 @@ Will apply to multiple fields/types
 	}
 }`
 
+## Querying
+`GET /index_name/_search?q=field:value AND field2:value2``
+
+`GET /index_name/_search?size=#
+{
+	"query": {
+		"_source": ["field_name", "field_name"],		#Specify result fields 
+		"term|match|match_phrase": {         				#Term  = exact match in index,
+																							  #Match = preprocess using the analyzer befo    re searching in index
+			"field_name": {
+				"value": "value",
+				"slop": edit_distance,   								#Define proximity search
+				"fuzziness": auto|edit_distance					#Max 2, calculated on a per-term basis	
+			}
+		},
+		"sort": [
+			{ "field_name": "desc|asc" }
+		]
+  }
+}`
+
+`GET /index_name/_search
+{
+  "query": {
+    "query_string" : {
+      "query" : "term AND term OR term",
+      "default_field" : "field_name"
+    }
+  }
+}`
+
+`GET /index_name/_search
+{
+	"query": {
+		"multi_match": {
+			"query":"value",
+			"fields": ["field_name", "field2_name"]
+		}
+	}
+}`
+
+**Ranges**
+`GET /index_name/_search
+{
+	"query": {
+		"range": {										
+			"field_name": {
+				"gt|gte": "upper_bound_value||-#y-#M-#d",  #|| defines relative date anchor
+				"lt|lte": "lower_bound_value",
+				"format": "dd-MM-yyyy"										 #Optional - specify a date format
+			}
+		}
+  }
+}`
+
+**Prefixes**
+`GET /index_name/_search
+{
+	"query": {
+		"prefix":
+			"field_name.keyword": "value"
+		}
+  }
+}`
+
+**Wildcard & Regex**
+`GET /index_name/_search
+{
+	"query": {
+		"wildcard|regexp":
+			"field_name": "match_pattern*?|regex_pattern"
+		}
+  }
+}`
+
+###### Compound Queries
+`GET /index_name/_search
+{
+	"query": {
+		"bool": {
+			"must|must_not|should": { [
+				{
+					"match":{
+						"field_name": {
+						"query": "value",
+						"_name": "name_for_pattern"						#optional param to show if matched in results
+					}
+				}
+			],
+			"filter": [
+				{
+					"range": {
+						"field_name": {
+							"lte|gte|gt|lt": value
+						}
+					}
+				}
+			] }
+		}
+	}
+}
+
+`
+
+###### Notes
+**Remember:** Inverse Document Frequency is calculated on a per-shard basis by default for relevance scoring
+
+
+###### Debugging Queries
+`GET /index_name/_explain
+{
+	"query": {
+		"term|match": {
+			"field_name": value
+		}
+	}
+}`
+
+## Aggregations
+`GET /index_name/_search
+{
+  "size": {
+    "aggs" : {
+      "name_for_aggregation": {
+				"sum|avg|min|max|cardinalit|value_count|stats": {
+					"field": "field_to_aggregate"
+				}
+			}
+    }
+  }
+}`
+
+###### Buckets
+`GET /index_name/_search
+{
+  "size": {
+    "aggs" : {
+      "name_for_buckets": {
+				"filters: {
+					"name_for_bucket": {
+						"match|missing": {
+							"field": "value"
+						}
+					}
+        }
+			}
+    }
+  }
+}`
+
+**Range Buckets**
+`GET /index_name/_search
+{
+  "size": {
+    "aggs" : {
+      "name_for_buckets": {
+				"range|date_range|histogram": {
+					"field": "field_name",
+					"ranges": [
+					{
+						"to: value
+					},
+					{
+						from": value,
+						"to": value
+					},
+					{
+					  "from": value
+					}
+					]
+        }
+			}
+    }
+  }
+}`
