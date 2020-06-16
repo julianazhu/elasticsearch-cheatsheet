@@ -1,47 +1,61 @@
 # ElasticSearch Cheatsheet
 ## CURL to Elastic Cloud
-`curl -H "Content-Type: application/x-ndjson" -XPOST -u username:password https://elastic-cloud-endpoint.com:9243/products/_bulk --data-binary "@products-bulk.json"`
+```
+curl -H "Content-Type: application/x-ndjson" -XPOST -u username:password https://elastic-cloud-endpoint.com:9243/products/_bulk --data-binary "@products-bulk.json"
+```
  
 ## Cluster & Shard Info
-`GET _cluster/health`
-`GET _cat/nodes?v`
-`GET _cat/indices?v`
-`GET _cat/shards?v`
+```
+GET _cluster/health
+GET _cat/nodes?v
+GET _cat/indices?v
+GET _cat/shards?v
+```
 
 ## Indices
-`PUT /index_name
+```
+PUT /index_name
 {
   "settings": {
 		"number_of_shards: #,
 		"number_of_replicas: #
    }
-}`
-`DELETE /index_name`
+}
+
+DELETE /index_name
+```
 
 ## Documents
-`GET /index_name/_doc/id`
+```
+GET /index_name/_doc/id
+```
 
 ###### Create
-`POST /index_name/_doc
+```
+POST /index_name/_doc
 {
   "field_name": value
-}`
+}
+```
 
 **Create with ID/Replace:**
-`PUT /index_name/_doc/id
+```
+PUT /index_name/_doc/id
 {
   "field_name": value
-}`
+}
+```
 
 ###### Update
-`POST /index_name/_update/id
+```
+POST /index_name/_update/id
 {
 	"doc": {
 		"field_name": value
   }
-}`
+}
 
-`POST /index_name/_update/id
+POST /index_name/_update/id
 {
 	"script" {
 		"source": """
@@ -53,9 +67,9 @@
 			"param_field_name": #
 		}
   }
-}`
+}
 
-`POST /index_name/_update_by_query												#will reindex all matches
+POST /index_name/_update_by_query						   #will reindex all matches
 {
 	"script": {
 		"source": "ctx._source.in_stock(op)"
@@ -63,10 +77,12 @@
   "query": {
 		"match_all": {}
   }
-}`
+}
+```
 
 ###### Upsert (Conditional Update)
-`POST /index_name/_update/id
+```
+POST /index_name/_update/id
 {
 	"script" {
 		"source": "ctx._source.field_name(++|--|=|op)",
@@ -74,19 +90,24 @@
 			"field_name": value
 		}
   }
-}`
+}
+```
 
 ###### Delete
-`DELETE /index_name/_doc/id`
-`POST /index_name/_delete_by_query
+```
+DELETE /index_name/_doc/id`
+
+POST /index_name/_delete_by_query
 {
   "query": {
 		"match_all": {}
 	}
-}`
+}
+```
 
 ## Bulk API
-`POST /index_name//_bulk
+```
+POST /index_name//_bulk
 { "index: {"_id": # } }
 { "field_name: value, "field2_name": value2 }
 { "create": {"_id":# } }
@@ -94,11 +115,13 @@
 { "update": {"_id":# } }
 { "doc": {field_name: value, "field2_name": value2 } }
 { "delete": {"_id":# } }
-`
+```
+
 **NOTE:** Bulk file must end with newline char (\n or \r\n)
 
 ## Analyze API
-`POST /_analyze 
+```
+POST /_analyze 
 {
   "text": "some_string",
   "analyzer": "(standard|stemming_analyzer|pattern_analyzer|english)",
@@ -107,13 +130,15 @@
   "filter": [
 		"lowercase".
 		"stop",
-		"asciifolding"																			#Translates weird chars
-}`
+		"asciifolding"									   #Translates weird chars
+}
+```
 
 ## Mappings
-`GET /index_name/_mapping`
+```
+GET /index_name/_mapping
 
-`PUT /index_name 
+PUT /index_name 
 {
 	"settings": {
 		"index.mapping.coerce": false"
@@ -122,26 +147,29 @@
 		"properties": {
 			"field_name": { "type": "integer|float|text|date|boolean|keyword},
 			"field_name": {
-				"properties": {																	#for object data type
+				"properties": {							   #for object data type
 					"field_name": { "type": "date" }
 					"format": "dd/MM/yyyy|epoch_second",
-					"doc_values": false,													#save space when not aggregating, scripting or sorting large indices
-					"norms": false, 															#save space when not using for relevance scoring (e.g. filtering/aggregations)
-					"indexing": false,														#save space non-filtering e.g. time series
-					"null_value": "NULL",													#set null val for searching																			
+					"doc_values": false,				   #save space when not aggregating, scripting or sorting large indices
+					"norms": false, 					   #save space when not using for relevance scoring (e.g. filtering/aggregations)
+					"indexing": false,					   #save space non-filtering e.g. time series
+					"null_value": "NULL",				   #set null val for searching																			
 					"copy_to": concatenation_field_name,
-					"ignore_above": #															#ignores > length
+					"ignore_above": #					   #ignores > length
 				} 
 			},
-			"field_name": { "type": "nested"},								#also for object data type
-			"field_name.subfield" { "type": "some_type" }     #dot notation
+			"field_name": { "type": "nested"},			   #also for object data type
+			"field_name.subfield" { "type": "some_type" }  #dot notation
 		}
   }
 }
+```
 
 ###### Index Templates
 Will apply to all new Indexes created matching the pattern
-`PUT /_template/index_name
+
+```
+PUT /_template/index_name
 {
 	"index_patterns": ["indexes_to_match*"],
 	"mappings": {
@@ -151,11 +179,13 @@ Will apply to all new Indexes created matching the pattern
 			}
 		}
 	}
-}`
+}
+```
 
 ###### Dynamic Templates
 Will apply to multiple fields/types
-`PUT /_template/index_name
+```
+PUT /_template/index_name
 {
 	"mappings": {
 		"dynamic_templates": {
@@ -164,16 +194,18 @@ Will apply to multiple fields/types
 				"match": "regex",
 				"match_pattern": "regex",
 				"mapping": {
-					"type": (desired_type|[dynamic_type])          #dynamic_type will leave type as is
+					"type": (desired_type|[dynamic_type])  #dynamic_type will leave type as is
 				}
 			}
 		}
 	}
-}`
+}
+```
 
 
 ## Re-Indexing
-`POST /_reindex
+```
+POST /_reindex
 {
 	"source":{
 		"index": "old_index_name",
@@ -185,10 +217,12 @@ Will apply to multiple fields/types
 	"dest": {
 		"index": "new_index_name"
   }
-}`
+}
+```
 
 ## Field Aliasing
-`PUT /index_name/_mapping
+```
+PUT /index_name/_mapping
 {
 	"properties": {
 		"field_name": {
@@ -196,30 +230,32 @@ Will apply to multiple fields/types
 			"path": "alias_name"
 		}
 	}
-}`
+}
+```
 
 ## Querying
-`GET /index_name/_search?q=field:value AND field2:value2``
+```
+GET /index_name/_search?q=field:value AND field2:value2
 
-`GET /index_name/_search?size=#
+GET /index_name/_search?size=#
 {
 	"query": {
-		"_source": ["field_name", "field_name"],		#Specify result fields 
-		"term|match|match_phrase": {         				#Term  = exact match in index,
-																							  #Match = preprocess using the analyzer befo    re searching in index
+		"_source": ["field_name", "field_name"],		   #Specify result fields 
+		"term|match|match_phrase": {         			   #Term  = exact match in index,
+														   #Match = preprocess using the analyzer before searching in index
 			"field_name": {
 				"value": "value",
-				"slop": edit_distance,   								#Define proximity search
-				"fuzziness": auto|edit_distance					#Max 2, calculated on a per-term basis	
+				"slop": edit_distance,   				   #Define proximity search
+				"fuzziness": auto|edit_distance			   #Max 2, calculated on a per-term basis	
 			}
 		},
 		"sort": [
 			{ "field_name": "desc|asc" }
 		]
   }
-}`
+}
 
-`GET /index_name/_search
+GET /index_name/_search
 {
   "query": {
     "query_string" : {
@@ -227,9 +263,9 @@ Will apply to multiple fields/types
       "default_field" : "field_name"
     }
   }
-}`
+}
 
-`GET /index_name/_search
+GET /index_name/_search
 {
 	"query": {
 		"multi_match": {
@@ -237,44 +273,52 @@ Will apply to multiple fields/types
 			"fields": ["field_name", "field2_name"]
 		}
 	}
-}`
+}
+```
 
 **Ranges**
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
 	"query": {
 		"range": {										
 			"field_name": {
 				"gt|gte": "upper_bound_value||-#y-#M-#d",  #|| defines relative date anchor
 				"lt|lte": "lower_bound_value",
-				"format": "dd-MM-yyyy"										 #Optional - specify a date format
+				"format": "dd-MM-yyyy"					   #Optional - specify a date format
 			}
 		}
   }
-}`
+}
+```
 
 **Prefixes**
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
 	"query": {
 		"prefix":
 			"field_name.keyword": "value"
 		}
   }
-}`
+}
+```
 
 **Wildcard & Regex**
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
 	"query": {
 		"wildcard|regexp":
 			"field_name": "match_pattern*?|regex_pattern"
 		}
   }
-}`
+}
+```
 
 ###### Compound Queries
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
 	"query": {
 		"bool": {
@@ -283,7 +327,7 @@ Will apply to multiple fields/types
 					"match":{
 						"field_name": {
 						"query": "value",
-						"_name": "name_for_pattern"						#optional param to show if matched in results
+						"_name": "name_for_pattern"		   #optional param to show if matched in results
 					}
 				}
 			],
@@ -299,25 +343,27 @@ Will apply to multiple fields/types
 		}
 	}
 }
-
-`
+```
 
 ###### Notes
 **Remember:** Inverse Document Frequency is calculated on a per-shard basis by default for relevance scoring
 
 
 ###### Debugging Queries
-`GET /index_name/_explain
+```
+GET /index_name/_explain
 {
 	"query": {
 		"term|match": {
 			"field_name": value
 		}
 	}
-}`
+}
+```
 
 ## Aggregations
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
   "size": {
     "aggs" : {
@@ -328,10 +374,12 @@ Will apply to multiple fields/types
 			}
     }
   }
-}`
+}
+```
 
 ###### Buckets
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
   "size": {
     "aggs" : {
@@ -346,10 +394,12 @@ Will apply to multiple fields/types
 			}
     }
   }
-}`
+}
+```
 
 **Range Buckets**
-`GET /index_name/_search
+```
+GET /index_name/_search
 {
   "size": {
     "aggs" : {
@@ -372,4 +422,5 @@ Will apply to multiple fields/types
 			}
     }
   }
-}`
+}
+```
