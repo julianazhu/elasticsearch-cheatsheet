@@ -17,8 +17,8 @@ GET _cat/shards?v
 PUT /index_name
 {
   "settings": {
-		"number_of_shards: #,
-		"number_of_replicas: #
+    "number_of_shards: #,
+    "number_of_replicas: #
    }
 }
 
@@ -50,32 +50,32 @@ PUT /index_name/_doc/id
 ```
 POST /index_name/_update/id
 {
-	"doc": {
-		"field_name": value
+  "doc": {
+    "field_name": value
   }
 }
 
 POST /index_name/_update/id
 {
-	"script" {
-		"source": """
-			if (ctx._source.field_name > 0) {
-				ctx._source.field_name(++|--|=|op) params.param_field_name"
-			}
-			""",
-		"params": {
-			"param_field_name": #
-		}
+  "script" {
+    "source": """
+      if (ctx._source.field_name > 0) {
+        ctx._source.field_name(++|--|=|op) params.param_field_name"
+      }
+      """,
+    "params": {
+      "param_field_name": #
+    }
   }
 }
 
-POST /index_name/_update_by_query						   #will reindex all matches
+POST /index_name/_update_by_query                  #will reindex all matches
 {
-	"script": {
-		"source": "ctx._source.in_stock(op)"
-	},
+  "script": {
+    "source": "ctx._source.in_stock(op)"
+  },
   "query": {
-		"match_all": {}
+    "match_all": {}
   }
 }
 ```
@@ -84,11 +84,11 @@ POST /index_name/_update_by_query						   #will reindex all matches
 ```
 POST /index_name/_update/id
 {
-	"script" {
-		"source": "ctx._source.field_name(++|--|=|op)",
-		"upsert": {
-			"field_name": value
-		}
+  "script" {
+    "source": "ctx._source.field_name(++|--|=|op)",
+    "upsert": {
+      "field_name": value
+    }
   }
 }
 ```
@@ -100,8 +100,8 @@ DELETE /index_name/_doc/id`
 POST /index_name/_delete_by_query
 {
   "query": {
-		"match_all": {}
-	}
+    "match_all": {}
+  }
 }
 ```
 
@@ -128,9 +128,9 @@ POST /_analyze
   "char_filter": [html_strip],
   "tokenizer": "standard"
   "filter": [
-		"lowercase".
-		"stop",
-		"asciifolding"									   #Translates weird chars
+    "lowercase".
+    "stop",
+    "asciifolding"                                 #Translates weird chars
 }
 ```
 
@@ -140,27 +140,27 @@ GET /index_name/_mapping
 
 PUT /index_name 
 {
-	"settings": {
-		"index.mapping.coerce": false"
+  "settings": {
+    "index.mapping.coerce": false"
   },
   "mappings": {
-		"properties": {
-			"field_name": { "type": "integer|float|text|date|boolean|keyword},
-			"field_name": {
-				"properties": {							   #for object data type
-					"field_name": { "type": "date" }
-					"format": "dd/MM/yyyy|epoch_second",
-					"doc_values": false,				   #save space when not aggregating, scripting or sorting large indices
-					"norms": false, 					   #save space when not using for relevance scoring (e.g. filtering/aggregations)
-					"indexing": false,					   #save space non-filtering e.g. time series
-					"null_value": "NULL",				   #set null val for searching																			
-					"copy_to": concatenation_field_name,
-					"ignore_above": #					   #ignores > length
-				} 
-			},
-			"field_name": { "type": "nested"},			   #also for object data type
-			"field_name.subfield" { "type": "some_type" }  #dot notation
-		}
+    "properties": {
+      "field_name": { "type": "integer|float|text|date|boolean|keyword},
+      "field_name": {
+        "properties": {                            #for object data type
+          "field_name": { "type": "date" }
+          "format": "dd/MM/yyyy|epoch_second",
+          "doc_values": false,                     #save space when not aggregating, scripting or sorting large indices
+          "norms": false,                          #save space when not using for relevance scoring (e.g. filtering/aggregations)
+          "indexing": false,                       #save space non-filtering e.g. time series
+          "null_value": "NULL",                    #set null val for searching                                      
+          "copy_to": concatenation_field_name,
+          "ignore_above": #                        #ignores > length
+        } 
+      },
+      "field_name": { "type": "nested"},         #also for object data type
+      "field_name.subfield" { "type": "some_type" }  #dot notation
+    }
   }
 }
 ```
@@ -171,14 +171,14 @@ Will apply to all new Indexes created matching the pattern
 ```
 PUT /_template/index_name
 {
-	"index_patterns": ["indexes_to_match*"],
-	"mappings": {
-		"properties": {
-			"field_name": {
-				"type": type
-			}
-		}
-	}
+  "index_patterns": ["indexes_to_match*"],
+  "mappings": {
+    "properties": {
+      "field_name": {
+        "type": type
+      }
+    }
+  }
 }
 ```
 
@@ -187,18 +187,18 @@ Will apply to multiple fields/types
 ```
 PUT /_template/index_name
 {
-	"mappings": {
-		"dynamic_templates": {
-			"field_name": {
-				"match_mapping_type": (type|*),
-				"match": "regex",
-				"match_pattern": "regex",
-				"mapping": {
-					"type": (desired_type|[dynamic_type])  #dynamic_type will leave type as is
-				}
-			}
-		}
-	}
+  "mappings": {
+    "dynamic_templates": {
+      "field_name": {
+        "match_mapping_type": (type|*),
+        "match": "regex",
+        "match_pattern": "regex",
+        "mapping": {
+          "type": (desired_type|[dynamic_type])    #dynamic_type will leave type as is
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -207,15 +207,15 @@ PUT /_template/index_name
 ```
 POST /_reindex
 {
-	"source":{
-		"index": "old_index_name",
-		"query": {
-			"range": {
-			}
-		}
-	},
-	"dest": {
-		"index": "new_index_name"
+  "source":{
+    "index": "old_index_name",
+    "query": {
+      "range": {
+      }
+    }
+  },
+  "dest": {
+    "index": "new_index_name"
   }
 }
 ```
@@ -224,12 +224,12 @@ POST /_reindex
 ```
 PUT /index_name/_mapping
 {
-	"properties": {
-		"field_name": {
-			"type": "alias",
-			"path": "alias_name"
-		}
-	}
+  "properties": {
+    "field_name": {
+      "type": "alias",
+      "path": "alias_name"
+    }
+  }
 }
 ```
 
@@ -239,19 +239,19 @@ GET /index_name/_search?q=field:value AND field2:value2
 
 GET /index_name/_search?size=#
 {
-	"query": {
-		"_source": ["field_name", "field_name"],		   #Specify result fields 
-		"term|match|match_phrase": {         			   #Term  = exact match in index,
-														   #Match = preprocess using the analyzer before searching in index
-			"field_name": {
-				"value": "value",
-				"slop": edit_distance,   				   #Define proximity search
-				"fuzziness": auto|edit_distance			   #Max 2, calculated on a per-term basis	
-			}
-		},
-		"sort": [
-			{ "field_name": "desc|asc" }
-		]
+  "query": {
+    "_source": ["field_name", "field_name"],       #Specify result fields 
+    "term|match|match_phrase": {                   #Term  = exact match in index,
+                                                   #Match = preprocess using the analyzer before searching in index
+      "field_name": {
+        "value": "value",
+        "slop": edit_distance,                     #Define proximity search
+        "fuzziness": auto|edit_distance            #Max 2, calculated on a per-term basis  
+      }
+    },
+    "sort": [
+      { "field_name": "desc|asc" }
+    ]
   }
 }
 
@@ -267,12 +267,12 @@ GET /index_name/_search
 
 GET /index_name/_search
 {
-	"query": {
-		"multi_match": {
-			"query":"value",
-			"fields": ["field_name", "field2_name"]
-		}
-	}
+  "query": {
+    "multi_match": {
+      "query":"value",
+      "fields": ["field_name", "field2_name"]
+    }
+  }
 }
 ```
 
@@ -280,14 +280,14 @@ GET /index_name/_search
 ```
 GET /index_name/_search
 {
-	"query": {
-		"range": {										
-			"field_name": {
-				"gt|gte": "upper_bound_value||-#y-#M-#d",  #|| defines relative date anchor
-				"lt|lte": "lower_bound_value",
-				"format": "dd-MM-yyyy"					   #Optional - specify a date format
-			}
-		}
+  "query": {
+    "range": {                    
+      "field_name": {
+        "gt|gte": "upper_bound_value||-#y-#M-#d",  #|| defines relative date anchor
+        "lt|lte": "lower_bound_value",
+        "format": "dd-MM-yyyy"                     #Optional - specify a date format
+      }
+    }
   }
 }
 ```
@@ -296,10 +296,10 @@ GET /index_name/_search
 ```
 GET /index_name/_search
 {
-	"query": {
-		"prefix":
-			"field_name.keyword": "value"
-		}
+  "query": {
+    "prefix":
+      "field_name.keyword": "value"
+    }
   }
 }
 ```
@@ -308,10 +308,10 @@ GET /index_name/_search
 ```
 GET /index_name/_search
 {
-	"query": {
-		"wildcard|regexp":
-			"field_name": "match_pattern*?|regex_pattern"
-		}
+  "query": {
+    "wildcard|regexp":
+      "field_name": "match_pattern*?|regex_pattern"
+    }
   }
 }
 ```
@@ -320,28 +320,28 @@ GET /index_name/_search
 ```
 GET /index_name/_search
 {
-	"query": {
-		"bool": {
-			"must|must_not|should": { [
-				{
-					"match":{
-						"field_name": {
-						"query": "value",
-						"_name": "name_for_pattern"		   #optional param to show if matched in results
-					}
-				}
-			],
-			"filter": [
-				{
-					"range": {
-						"field_name": {
-							"lte|gte|gt|lt": value
-						}
-					}
-				}
-			] }
-		}
-	}
+  "query": {
+    "bool": {
+      "must|must_not|should": { [
+        {
+          "match":{
+            "field_name": {
+            "query": "value",
+            "_name": "name_for_pattern"            #optional param to show if matched in results
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "field_name": {
+              "lte|gte|gt|lt": value
+            }
+          }
+        }
+      ] }
+    }
+  }
 }
 ```
 
@@ -353,11 +353,11 @@ GET /index_name/_search
 ```
 GET /index_name/_explain
 {
-	"query": {
-		"term|match": {
-			"field_name": value
-		}
-	}
+  "query": {
+    "term|match": {
+      "field_name": value
+    }
+  }
 }
 ```
 
@@ -368,10 +368,10 @@ GET /index_name/_search
   "size": {
     "aggs" : {
       "name_for_aggregation": {
-				"sum|avg|min|max|cardinalit|value_count|stats": {
-					"field": "field_to_aggregate"
-				}
-			}
+        "sum|avg|min|max|cardinalit|value_count|stats": {
+          "field": "field_to_aggregate"
+        }
+      }
     }
   }
 }
@@ -384,14 +384,14 @@ GET /index_name/_search
   "size": {
     "aggs" : {
       "name_for_buckets": {
-				"filters: {
-					"name_for_bucket": {
-						"match|missing": {
-							"field": "value"
-						}
-					}
+        "filters: {
+          "name_for_bucket": {
+            "match|missing": {
+              "field": "value"
+            }
+          }
         }
-			}
+      }
     }
   }
 }
@@ -404,22 +404,22 @@ GET /index_name/_search
   "size": {
     "aggs" : {
       "name_for_buckets": {
-				"range|date_range|histogram": {
-					"field": "field_name",
-					"ranges": [
-					{
-						"to: value
-					},
-					{
-						from": value,
-						"to": value
-					},
-					{
-					  "from": value
-					}
-					]
+        "range|date_range|histogram": {
+          "field": "field_name",
+          "ranges": [
+          {
+            "to: value
+          },
+          {
+            from": value,
+            "to": value
+          },
+          {
+            "from": value
+          }
+          ]
         }
-			}
+      }
     }
   }
 }
